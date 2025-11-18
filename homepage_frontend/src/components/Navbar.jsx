@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import CategoryMegaMenu from './CategoryMegaMenu';
 
 /**
  * PUBLIC_INTERFACE
@@ -28,6 +29,13 @@ export default function Navbar({ onToggleTheme, theme = 'light' }) {
     []
   );
 
+  // Mega menu state
+  const [megaOpen, setMegaOpen] = useState(false);
+  const catBtnRef = useRef(null);
+
+  const toggleMega = () => setMegaOpen((v) => !v);
+  const closeMega = () => setMegaOpen(false);
+
   useEffect(() => {
     const onScroll = () => {
       const sectionIds = ['home', 'brands', 'categories', 'testimonials', 'newsletter'];
@@ -42,6 +50,7 @@ export default function Navbar({ onToggleTheme, theme = 'light' }) {
       });
       setActiveId(current);
       setScrolled(window.scrollY > 4);
+      if (window.scrollY > 4 && megaOpen) setMegaOpen(false);
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -63,6 +72,7 @@ export default function Navbar({ onToggleTheme, theme = 'light' }) {
     // Update hash after scroll (non-blocking)
     window.history.replaceState(null, '', href);
     setOpen(false);
+    setMegaOpen(false);
   };
 
   return (
@@ -74,16 +84,33 @@ export default function Navbar({ onToggleTheme, theme = 'light' }) {
         </a>
 
         <div className="nav-links" role="navigation" aria-label="In-page">
-          {links.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              className={activeId === l.href.slice(1) ? 'active' : ''}
-              onClick={(e) => handleAnchorClick(e, l.href)}
+          <div className="nav-group" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <button
+              ref={catBtnRef}
+              className={`btn btn-secondary`}
+              aria-haspopup="dialog"
+              aria-expanded={megaOpen}
+              aria-controls="mega-menu"
+              onClick={() => setMegaOpen((v) => !v)}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown') setMegaOpen(true);
+                if (e.key === 'Escape') setMegaOpen(false);
+              }}
+              type="button"
             >
-              {l.label}
-            </a>
-          ))}
+              Browse Categories ▾
+            </button>
+            {links.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                className={activeId === l.href.slice(1) ? 'active' : ''}
+                onClick={(e) => handleAnchorClick(e, l.href)}
+              >
+                {l.label}
+              </a>
+            ))}
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -113,6 +140,11 @@ export default function Navbar({ onToggleTheme, theme = 'light' }) {
         </div>
       </div>
 
+      <CategoryMegaMenu
+        open={megaOpen}
+        onClose={closeMega}
+        label="Browse categories menu"
+      />
       <div className="menu-panel" style={{ display: open ? 'block' : 'none' }}>
         <div className="container" style={{ display: 'grid', gap: 6 }}>
           {links.map((l) => (

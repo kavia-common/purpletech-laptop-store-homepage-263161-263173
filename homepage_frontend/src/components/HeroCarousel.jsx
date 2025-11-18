@@ -8,19 +8,19 @@ import { useEffect, useRef, useState } from 'react';
 export default function HeroCarousel() {
   const slides = [
     {
-      title: 'Power your ambition.',
-      subtitle: 'Premium laptops for work, creativity, and play.',
-      ctas: [{ label: 'Shop Now', href: '#categories' }, { label: 'View Deals', href: '#categories' }],
+      title: 'Mega Savings Event',
+      subtitle: 'Up to 35% off top laptops and desktops',
+      ctas: [{ label: 'Shop Deals', href: '#top-deals' }, { label: 'All Laptops', href: '#categories' }],
     },
     {
-      title: 'Gaming unleashed.',
-      subtitle: 'High refresh, high performance rigs that go anywhere.',
-      ctas: [{ label: 'Explore Gaming', href: '#categories' }],
+      title: 'Networking Essentials',
+      subtitle: 'Build faster, reliable home and office networks',
+      ctas: [{ label: 'Shop Networking', href: '#trending' }],
     },
     {
-      title: 'Ultra-portable, ultra-capable.',
-      subtitle: 'Featherweight ultrabooks with all-day battery.',
-      ctas: [{ label: 'See Ultrabooks', href: '#categories' }],
+      title: 'Security You Can Trust',
+      subtitle: 'Cameras, NVRs and smart access control',
+      ctas: [{ label: 'Explore Security', href: '#trending' }],
     },
   ];
 
