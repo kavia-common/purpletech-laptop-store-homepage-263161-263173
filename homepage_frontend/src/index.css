@@ -9,6 +9,18 @@ html:focus-within {
   scroll-behavior: smooth;
 }
 
+/* Respect reduced motion preferences for scrolling */
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 html, body, #root {
   height: 100%;
 }
@@ -18,7 +30,7 @@ body {
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     Arial, sans-serif;
-  line-height: 1.5;
+  line-height: 1.6; /* slightly increased for readability */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #f9fafb;
@@ -41,7 +53,17 @@ a {
   text-decoration: none;
 }
 
+/* High-contrast focus outlines */
 :focus-visible {
-  outline: 2px solid #2563EB;
-  outline-offset: 2px;
+  outline: 3px solid #2563EB;
+  outline-offset: 3px;
+}
+
+/* Utility to hide decorative text but keep for screen readers */
+.sr-only {
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
 }

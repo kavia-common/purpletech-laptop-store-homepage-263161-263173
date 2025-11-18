@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 /**
  * PUBLIC_INTERFACE
  * A lightweight, accessible carousel with 3 slides using CSS transitions.
- * Includes auto-rotation and previous/next controls with aria labels.
+ * Includes auto-rotation, pause on hover, keyboard navigation, and live region updates.
  */
 export default function HeroCarousel() {
   const slides = [
@@ -25,16 +25,26 @@ export default function HeroCarousel() {
   ];
 
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
   const timer = useRef(null);
+  const liveRef = useRef(null);
 
   useEffect(() => {
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (paused || prefersReduced) return undefined;
     timer.current = setInterval(() => {
       setIndex((i) => (i + 1) % slides.length);
     }, 5000);
     return () => {
       if (timer.current) clearInterval(timer.current);
     };
-  }, [slides.length]);
+  }, [slides.length, paused]);
+
+  useEffect(() => {
+    if (liveRef.current) {
+      liveRef.current.textContent = `Slide ${index + 1} of ${slides.length}: ${slides[index].title}`;
+    }
+  }, [index, slides]);
 
   const go = (dir) => {
     setIndex((i) => {
@@ -43,10 +53,28 @@ export default function HeroCarousel() {
     });
   };
 
+  const onKeyDown = (e) => {
+    if (e.key === 'ArrowLeft') go(-1);
+    if (e.key === 'ArrowRight') go(1);
+  };
+
   return (
-    <div aria-roledescription="carousel" aria-label="Featured promotions">
-      <div className="hero-inner">
-        <div className="card hero-slide" role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${slides.length}`}>
+    <div
+      aria-roledescription="carousel"
+      aria-label="Featured promotions"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onKeyDown={onKeyDown}
+      tabIndex={0}
+      style={{ outline: 'none' }}
+    >
+      <div className="hero-inner" aria-live="off">
+        <div
+          className="card hero-slide"
+          role="group"
+          aria-roledescription="slide"
+          aria-label={`${index + 1} of ${slides.length}`}
+        >
           <div>
             <div className="badge" aria-hidden="true">Purpletech Laptops</div>
             <h1 className="hero-title">{slides[index].title}</h1>
@@ -85,6 +113,14 @@ export default function HeroCarousel() {
           </button>
         ))}
       </div>
+
+      {/* Live region for polite announcements */}
+      <div
+        ref={liveRef}
+        aria-live="polite"
+        aria-atomic="true"
+        style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(1px, 1px, 1px, 1px)' }}
+      />
     </div>
   );
 }

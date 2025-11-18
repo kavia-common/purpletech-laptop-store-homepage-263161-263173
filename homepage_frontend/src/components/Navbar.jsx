@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
  * - Sticky with translucent blur.
  * - Highlights active section based on scroll position.
  * - Collapsible on mobile.
+ * - Applies background blur+shadow on scroll, and smooth anchor scrolling with reduced-motion support.
  *
  * @param {Object} props
  * @param {() => void} [props.onToggleTheme] - Optional theme toggle handler.
@@ -14,6 +15,7 @@ import { useEffect, useMemo, useState } from 'react';
 export default function Navbar({ onToggleTheme, theme = 'light' }) {
   const [open, setOpen] = useState(false);
   const [activeId, setActiveId] = useState('home');
+  const [scrolled, setScrolled] = useState(false);
 
   const links = useMemo(
     () => [
@@ -27,7 +29,7 @@ export default function Navbar({ onToggleTheme, theme = 'light' }) {
   );
 
   useEffect(() => {
-    const handler = () => {
+    const onScroll = () => {
       const sectionIds = ['home', 'brands', 'categories', 'testimonials', 'newsletter'];
       const offset = 90;
       let current = 'home';
@@ -39,25 +41,46 @@ export default function Navbar({ onToggleTheme, theme = 'light' }) {
         }
       });
       setActiveId(current);
+      setScrolled(window.scrollY > 4);
     };
-    handler();
-    window.addEventListener('scroll', handler, { passive: true });
-    return () => window.removeEventListener('scroll', handler);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const toggleMenu = () => setOpen((o) => !o);
 
+  // Smooth scroll with offset for in-page anchors
+  const handleAnchorClick = (e, href) => {
+    const id = href.slice(1);
+    const el = document.getElementById(id);
+    if (!el) return;
+    e.preventDefault();
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const navOffset = 70;
+    const top = window.scrollY + el.getBoundingClientRect().top - navOffset;
+    window.scrollTo({ top, behavior: prefersReduced ? 'auto' : 'smooth' });
+    // Update hash after scroll (non-blocking)
+    window.history.replaceState(null, '', href);
+    setOpen(false);
+  };
+
   return (
-    <nav className="navbar" aria-label="Primary">
+    <nav className={`navbar${scrolled ? ' scrolled' : ''}`} aria-label="Primary">
       <div className="container nav-inner">
-        <a href="#home" className="brand" aria-label="Purpletech Laptops home">
+        <a href="#home" className="brand" aria-label="Purpletech Laptops home" onClick={(e) => handleAnchorClick(e, '#home')}>
           <span className="brand-icon" aria-hidden="true" />
           <span>Purpletech Laptops</span>
         </a>
 
         <div className="nav-links" role="navigation" aria-label="In-page">
           {links.map((l) => (
-            <a key={l.href} href={l.href} className={activeId === l.href.slice(1) ? 'active' : ''}>
+            <a
+              key={l.href}
+              href={l.href}
+              className={activeId === l.href.slice(1) ? 'active' : ''}
+              onClick={(e) => handleAnchorClick(e, l.href)}
+            >
               {l.label}
             </a>
           ))}
@@ -67,7 +90,7 @@ export default function Navbar({ onToggleTheme, theme = 'light' }) {
           <button
             type="button"
             className="btn btn-secondary nav-cta"
-            onClick={() => (window.location.hash = '#categories')}
+            onClick={(e) => handleAnchorClick(e, '#categories')}
           >
             Shop Deals
           </button>
@@ -96,7 +119,7 @@ export default function Navbar({ onToggleTheme, theme = 'light' }) {
             <a
               key={l.href}
               href={l.href}
-              onClick={() => setOpen(false)}
+              onClick={(e) => handleAnchorClick(e, l.href)}
               className={activeId === l.href.slice(1) ? 'active' : ''}
             >
               {l.label}
@@ -105,10 +128,7 @@ export default function Navbar({ onToggleTheme, theme = 'light' }) {
           <button
             type="button"
             className="btn btn-primary"
-            onClick={() => {
-              setOpen(false);
-              window.location.hash = '#categories';
-            }}
+            onClick={(e) => handleAnchorClick(e, '#categories')}
           >
             Shop Deals
           </button>
