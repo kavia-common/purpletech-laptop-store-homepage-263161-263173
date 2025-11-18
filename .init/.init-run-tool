@@ -1,0 +1,4 @@
+{
+    "command": "PORT=<port> HOST=<host> BROWSER=none npm start",
+    "working_directory": "/home/kavia/workspace/code-generation/purpletech-laptop-store-homepage-263161-263173/homepage_frontend"
+}
